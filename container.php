@@ -12,6 +12,8 @@ use Bernard\QueueFactory\PersistentFactory;
 use Building\Domain\Aggregate\Building;
 use Building\Domain\Command;
 use Building\Domain\Repository\BuildingRepositoryInterface;
+use Building\Infrastructure\Listener\UserHasCheckedInListener;
+use Building\Infrastructure\Listener\UserHasCheckedOutListener;
 use Building\Infrastructure\Repository\BuildingRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\PDOSqlite\Driver;
@@ -43,6 +45,7 @@ use Prooph\ServiceBus\Plugin\ServiceLocatorPlugin;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Zend\ServiceManager\ServiceManager;
 use Rhumsaa\Uuid\Uuid;
+use Building\Domain\DomainEvent;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -215,6 +218,16 @@ return new ServiceManager([
                 $building = $buildings->get(Uuid::fromString($command->buildingId()));
                 $building->checkOutUser($command->username());
             };
+        },
+        DomainEvent\UserHasCheckedIn::class . '-listeners' => function (ContainerInterface $container) {
+            return [
+                new UserHasCheckedInListener()
+            ];
+        },
+        DomainEvent\UserHasCheckedOut::class . '-listeners' => function (ContainerInterface $container) {
+            return [
+                new UserHasCheckedOutListener()
+            ];
         },
         BuildingRepositoryInterface::class => function (ContainerInterface $container) : BuildingRepositoryInterface {
             return new BuildingRepository(
