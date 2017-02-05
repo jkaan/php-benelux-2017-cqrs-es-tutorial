@@ -42,6 +42,7 @@ use Prooph\ServiceBus\MessageBus;
 use Prooph\ServiceBus\Plugin\ServiceLocatorPlugin;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Zend\ServiceManager\ServiceManager;
+use Rhumsaa\Uuid\Uuid;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -197,6 +198,22 @@ return new ServiceManager([
 
             return function (Command\RegisterNewBuilding $command) use ($buildings) {
                 $buildings->add(Building::new($command->name()));
+            };
+        },
+        Command\CheckInUser::class => function (ContainerInterface $container) : callable {
+            $buildings = $container->get(BuildingRepositoryInterface::class);
+
+            return function (Command\CheckInUser $command) use ($buildings) {
+                $building = $buildings->get(Uuid::fromString($command->buildingId()));
+                $building->checkInUser($command->username());
+            };
+        },
+        Command\CheckOutUser::class => function (ContainerInterface $container) : callable {
+            $buildings = $container->get(BuildingRepositoryInterface::class);
+
+            return function (Command\CheckOutUser $command) use ($buildings) {
+                $building = $buildings->get(Uuid::fromString($command->buildingId()));
+                $building->checkOutUser($command->username());
             };
         },
         BuildingRepositoryInterface::class => function (ContainerInterface $container) : BuildingRepositoryInterface {

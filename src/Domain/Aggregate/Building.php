@@ -7,6 +7,8 @@ namespace Building\Domain\Aggregate;
 use Building\Domain\DomainEvent\NewBuildingWasRegistered;
 use Prooph\EventSourcing\AggregateRoot;
 use Rhumsaa\Uuid\Uuid;
+use Building\Domain\DomainEvent\UserHasCheckedIn;
+use Building\Domain\DomainEvent\UserHasCheckedOut;
 
 final class Building extends AggregateRoot
 {
@@ -19,6 +21,11 @@ final class Building extends AggregateRoot
      * @var string
      */
     private $name;
+
+    /**
+     * @var array
+     */
+    private $checkedInUsers;
 
     public static function new(string $name) : self
     {
@@ -36,12 +43,34 @@ final class Building extends AggregateRoot
 
     public function checkInUser(string $username)
     {
-        // @TODO to be implemented
+        $this->recordThat(UserHasCheckedIn::occur(
+            $this->aggregateId(),
+            [
+                'username' => $username
+            ]
+        ));
     }
 
     public function checkOutUser(string $username)
     {
-        // @TODO to be implemented
+        $this->recordThat(UserHasCheckedOut::occur(
+            $this->aggregateId(),
+            [
+                'username' => $username
+            ]
+        ));
+    }
+
+    public function whenUserHasCheckedIn(UserHasCheckedIn $event)
+    {
+        $this->uuid = $event->uuid();
+        $this->checkedInUsers[] = $event->username();
+    }
+
+    public function whenUserHasCheckedOut(UserHasCheckedOut $event)
+    {
+        $this->uuid = $event->uuid();
+        unset($this->checkedInUsers[$event->username()]);
     }
 
     public function whenNewBuildingWasRegistered(NewBuildingWasRegistered $event)
