@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Building\App;
 
 use Building\Domain\Command;
+use Building\Domain\Repository\BuildingRepositoryInterface;
 use Prooph\ServiceBus\CommandBus;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -54,8 +55,13 @@ call_user_func(function () {
         return $response->withAddedHeader('Location', '/');
     });
 
-    $app->get('/building/{buildingId}', function (Request $request, Response $response) : Response {
+    $app->get('/building/{buildingId}', function (Request $request, Response $response) use ($sm) : Response {
         $buildingId = Uuid::fromString($request->getAttribute('buildingId'));
+
+        /** @var BuildingRepositoryInterface $buildings */
+        $buildings = $sm->get(BuildingRepositoryInterface::class);
+        $building = $buildings->get($buildingId);
+        $currentlyCheckedInUsers = $building->getCheckedInUsers();
 
         ob_start();
         require __DIR__ . '/../template/building.php';

@@ -70,7 +70,9 @@ final class Building extends AggregateRoot
     public function whenUserHasCheckedOut(UserHasCheckedOut $event)
     {
         $this->uuid = $event->uuid();
-        unset($this->checkedInUsers[$event->username()]);
+        if ($key = array_search($event->username(), $this->checkedInUsers) !== false) {
+            unset($this->checkedInUsers[$key]);
+        }
     }
 
     public function whenNewBuildingWasRegistered(NewBuildingWasRegistered $event)
@@ -93,5 +95,10 @@ final class Building extends AggregateRoot
     public function id() : string
     {
         return $this->aggregateId();
+    }
+
+    public function getCheckedInUsers(): array
+    {
+        return $this->checkedInUsers;
     }
 }

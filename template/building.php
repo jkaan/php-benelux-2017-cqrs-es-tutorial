@@ -1,4 +1,7 @@
-<?php /* @var \Rhumsaa\Uuid\Uuid $buildingId */ ?>
+<?php
+/* @var \Rhumsaa\Uuid\Uuid $buildingId */
+/* @var string[] $currentlyCheckedInUsers */
+?>
 <h1>Welcome to CQRS+ES building</h1>
 
 <h2>Check In: </h2>
@@ -14,3 +17,10 @@
 
     <button>CheckOut</button>
 </form>
+
+<h3>Users that are currently checked in: </h3>
+<ul>
+    <?php foreach ($currentlyCheckedInUsers as $user) : ?>
+        <li><?php echo $user; ?></li>
+    <?php endforeach; ?>
+</ul>
